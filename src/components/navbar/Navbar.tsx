@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import NavLink from './Navlink';
@@ -9,19 +9,43 @@ import Logo from './Logo';
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Show navbar when at top of page
+      if (currentScrollY < 10) {
+        setIsVisible(true);
+      }
+      // Hide when scrolling down, show when scrolling up
+      else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setIsVisible(false);
+      } else if (currentScrollY < lastScrollY) {
+        setIsVisible(true);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
 
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [lastScrollY]);
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
 
   return (
-    <motion.header 
-      className={`fixed top--2 w-full z-100 transition-all duration-300 px-12 py-0 m-0`}
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.3 }}
+    <header 
+      className={`fixed top-0 w-full z-50 px-12 py-0 m-0  backdrop-blur-sm ${
+        isVisible ? 'translate-y-0' : '-translate-y-full'
+      }`}
     >
       <div className="container mx-auto px-4 md:px-6 ">
         <div className="flex items-center  h-14 md:h-14">
@@ -113,7 +137,7 @@ const Navbar: React.FC = () => {
           )}
         </AnimatePresence>
       </div>
-    </motion.header>
+    </header>
   );
 };
 
